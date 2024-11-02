@@ -45,7 +45,7 @@ see https://github.com/ngmor/catch_ros2/tree/main
 $ cd ~/colcon_ws/   # assuming your workspace is at '~/colcon_ws'
 $ rm -rf install/ build/
 $ source /opt/ros/humble/setup.bash  # if needed
-$ colcon build 
+$ colcon build --packages-select integration_test
 ```
 
 ## How to Run:
@@ -55,13 +55,13 @@ $ source install/setup.bash
 ```
 ### then, run the test and look at the output:
 ```bash
-$ colcon test 
+$ colcon test --packages-select integration_test
 $ cat log/latest_test/integration_test/stdout_stderr.log
 ```
 
 ### alternatively, you can combine these into one step:
 ```bash
-$ colcon test  --event-handlers console_cohesion+
+$ colcon test  --event-handlers console_cohesion+ --packages-select integration_test
 ```
 
 

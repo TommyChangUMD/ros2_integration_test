@@ -1,5 +1,7 @@
 # ros2_integration_test
 
+An example of testing C++ ROS2 nodes (ie., ROS2 integration test or level 2 unit testing) using the catch2 framework. 
+
 First, move this directory to the `src/` folder of your colcon
 workspace.  This is desirable or you may get a lot of errors from
 `ament_lint_cmake`.

@@ -84,14 +84,9 @@ $ echo $?
 ## Example output
 
 ```
+$ colcon test  --return-code-on-test-failure --event-handlers console_cohesion+ --packages-select integration_test
 ... <SKIP> ...
 
-Constructing a list of tests
-Done constructing a list of tests
-Updating test list for fixtures
-Added 0 tests to meet fixture requirements
-Checking test dependency graph...
-Checking test dependency graph end
 test 1
     Start 1: ExampleIntegration_TestYAML
 
@@ -99,30 +94,41 @@ test 1
 1: Test timeout computed to be: 60
 1: -- run_test.py: invoking following command in '/home/tchang/Projects/ros2_integration_test/build/integration_test':
 1:  - ros2 launch integration_test integration_test.launch.yaml result_file:=/home/tchang/Projects/ros2_integration_test/build/integration_test/test_results/integration_test/ExampleIntegration_TestYAML.xml
-1: [INFO] [launch]: All log files can be found below /home/tchang/.ros/log/2024-10-31-05-17-07-071766-tchang-IdeaPad-3-17ABA7-375974
+1: [INFO] [launch]: All log files can be found below /home/tchang/.ros/log/2024-11-10-00-53-27-624341-tchang-IdeaPad-3-17ABA7-1534607
 1: [INFO] [launch]: Default logging verbosity is set to INFO
-1: [INFO] [talker-1]: process started with pid [375975]
-1: [INFO] [integration_aux_node-2]: process started with pid [375977]
-1: [INFO] [integration_test_node-3]: process started with pid [375979]
-1: [talker-1] [INFO] [1730366228.201536616] [talker]: Publishing: 'Hello World: 1'
-1: [integration_test_node-3] [INFO] [1730366228.214357240] [talker_test_node]: I heard: 'Hello World: 1'
-1: [integration_test_node-3] Randomness seeded to: 4149424261
+1: [INFO] [service_server-1]: process started with pid [1534608]
+1: [INFO] [talker-2]: process started with pid [1534610]
+1: [INFO] [integration_test_node-3]: process started with pid [1534612]
+1: [service_server-1] [INFO] [1731218007.734964750] []: initialize ROS2
+1: [service_server-1] [INFO] [1731218007.739188331] []: Create service_server_node
+1: [service_server-1] [INFO] [1731218007.750853990] [service_server_node]: Start server
+1: [integration_test_node-3] [INFO] [1731218007.751413977] [IntegrationTestNode1]: Got test_duration =2
+1: [integration_test_node-3] [INFO] [1731218007.752059171] [IntegrationTestNode1]: myServiceName client created
+1: [integration_test_node-3] [INFO] [1731218007.752104149] [IntegrationTestNode1]: Performing Test...
+1: [integration_test_node-3] [INFO] [1731218007.752166657] [IntegrationTestNode1]: duration = 5.7619e-05 service_found=1
+1: [integration_test_node-3] [INFO] [1731218007.762298322] [IntegrationTestNode1]: Got test_duration =2
+1: [integration_test_node-3] [INFO] [1731218007.763018595] [IntegrationTestNode1]: duration = 2.374e-06 timeout=2
+1: [talker-2] [INFO] [1731218008.752196339] [talker]: Publishing: 'Hello World: 1'
+1: [integration_test_node-3] [INFO] [1731218008.763276798] [IntegrationTestNode1]: I heard:Hello World: 1
+1: [integration_test_node-3] [INFO] [1731218008.863156811] [IntegrationTestNode1]: duration = 1.10012 got_topic=1
+1: [integration_test_node-3] Randomness seeded to: 2027099100
 1: [integration_test_node-3] ===============================================================================
 1: [integration_test_node-3] All tests passed (2 assertions in 2 test cases)
 1: [integration_test_node-3] 
-1: [INFO] [integration_test_node-3]: process has finished cleanly [pid 375979]
+1: [INFO] [integration_test_node-3]: process has finished cleanly [pid 1534612]
 1: [INFO] [launch]: process[integration_test_node-3] was required: shutting down launched system
-1: [INFO] [integration_aux_node-2]: sending signal 'SIGINT' to process[integration_aux_node-2]
-1: [INFO] [talker-1]: sending signal 'SIGINT' to process[talker-1]
-1: [integration_aux_node-2] [INFO] [1730366228.825959133] [rclcpp]: signal_handler(signum=2)
-1: [talker-1] [INFO] [1730366228.826492651] [rclcpp]: signal_handler(signum=2)
-1: [INFO] [integration_aux_node-2]: process has finished cleanly [pid 375977]
-1: [INFO] [talker-1]: process has finished cleanly [pid 375975]
+1: [INFO] [talker-2]: sending signal 'SIGINT' to process[talker-2]
+1: [INFO] [service_server-1]: sending signal 'SIGINT' to process[service_server-1]
+1: [talker-2] [INFO] [1731218008.974335815] [rclcpp]: signal_handler(signum=2)
+1: [service_server-1] [INFO] [1731218008.974978983] [rclcpp]: signal_handler(signum=2)
+1: [service_server-1] [INFO] [1731218008.975229853] [service_server_node]: Shutdown ROS2
+1: [INFO] [talker-2]: process has finished cleanly [pid 1534610]
+1: [INFO] [service_server-1]: process has finished cleanly [pid 1534608]
 1: -- run_test.py: return code 0
 1: -- run_test.py: verify result file '/home/tchang/Projects/ros2_integration_test/build/integration_test/test_results/integration_test/ExampleIntegration_TestYAML.xml'
-1/1 Test #1: ExampleIntegration_TestYAML ......   Passed    2.14 sec
+1/1 Test #1: ExampleIntegration_TestYAML ......   Passed    1.73 sec
 
 100% tests passed, 0 tests failed out of 1
 
-Total Test time (real) =   2.14 sec
+Total Test time (real) =   1.73 sec
 ```

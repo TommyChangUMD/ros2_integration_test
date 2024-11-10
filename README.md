@@ -75,7 +75,7 @@ $ echo ?
 ```
 
 ### check the return status (after colcon test):
-You don't have to re-run the test to see the old result.
+You don't have to re-run the test to see the old result. You can just do:
 ```
 $ colcon test-result --verbose --test-result-base build/integration_test
 $ echo $?

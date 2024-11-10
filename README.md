@@ -26,6 +26,12 @@ $ cd ~/colcon_ws/src
 $ git clone git@github.com:TommyChangUMD/ros2_integration_test.git
 ```
 
+
+## Terminology
+
+- **Auxiliary test node**: the node under test
+- **Integration test node**:  the node which performs the test
+
 ## Install the catch_ros2
 
 ``` bash
@@ -55,6 +61,7 @@ First, soruce the setup file:
 ```bash
 $ source install/setup.bash
 ```
+
 ### then, run the test and look at the output:
 ```bash
 $ colcon test --packages-select integration_test
@@ -63,11 +70,12 @@ $ cat log/latest_test/integration_test/stdout_stderr.log
 
 ### alternatively, you can combine these into one step:
 ```bash
-$ colcon test  --event-handlers console_cohesion+ --packages-select integration_test
+$ colcon test  --return-code-on-test-failure --event-handlers console_cohesion+ --packages-select integration_test
+$ echo ?
 ```
 
-
-### check the return status:
+### check the return status (after colcon test):
+You don't have to re-run the test to see the old result.
 ```
 $ colcon test-result --verbose --test-result-base build/integration_test
 $ echo $?

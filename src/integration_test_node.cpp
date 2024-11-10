@@ -15,107 +15,145 @@
 // # CHANGES:
 //
 // 2024-10-31, Tommy Chang
-//     - Renamed the first test to "service_test".
-//     - Added a second test, "talker test".
-
-/// @file This is an example ROS 2 node that checks assertions using Catch2.
-/// It simply checks if the "test_service" service is available at least once
-/// during the duration of the test.
+//     - Renamed the first test case to "service_test".
+//     - Added a second test, "talker_test".
+//     - Rewrite the first test case to use wait_for_service().
+//     - Use modern ROS2 syntax
+//     - Add comments
 
 #include <catch_ros2/catch_ros2.hpp>
+#include <chrono>
+#include <rclcpp/logging.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/empty.hpp>
 #include <std_msgs/msg/string.hpp>
 
+auto Logger = rclcpp::get_logger (""); // create an initial Logger
 using namespace std::chrono_literals;
 
+
+////////////////////////////////////////////////
+// TEST CASE 1:  Testing a service server
+////////////////////////////////////////////////
+
 TEST_CASE("service_test", "[integration]") {
-  // Create a simple client node to check if the auxiliary node
-  // has a service available
-  auto node = rclcpp::Node::make_shared("integration_test_node");
 
-  // Declare a parameter on the node
-  // (the default catch_ros2 node main will allow ROS arguments
-  // like parameters to be passed to nodes in test files)
-  node->declare_parameter<double>("test_duration");
+  /* In this test case, the node under test (aka Auxiliary test node)
+     is a service server, which got launched by the launcher.
 
-  // Get value of the parameter
-  // This line will cause a runtime error if a value
-  // for the "test_duration" parameter is not passed to the node
-  const auto TEST_DURATION =
-    node->get_parameter("test_duration").get_parameter_value().get<double>();
+     We will ceate a service client as part of the node performing the
+     test (aka Integration test node).  And the test simply checks if
+     the service is available within the duration of the test. */
+  
+  /**
+   * 1.) Create the node that performs the test. (aka Integration test node):
+   */
+  auto testerNode = rclcpp::Node::make_shared ("IntegrationTestNode1");
+  Logger = testerNode->get_logger(); // make sure message will appear in rqt_console
 
-  // Create a client for the service we're looking for
-  auto client = node->create_client<std_srvs::srv::Empty>("test_service");
+  /**
+   * 2.) Declare a parameter for the duration of the test:
+   */
+  testerNode->declare_parameter<double> ("test_duration");
 
+  /**
+   * 3.) Get the test duration value:
+   */
+  const auto TEST_DURATION = testerNode->get_parameter("test_duration").get_parameter_value().get<double>();
+  RCLCPP_INFO_STREAM (Logger, "Got test_duration =" << TEST_DURATION);
 
-  rclcpp::Time start_time = rclcpp::Clock().now();
+  /**
+   * 4.) Now, create a client for the specific service we're looking for:
+   */
+  auto client = testerNode->create_client<std_srvs::srv::Empty> ("myServiceName");
+  RCLCPP_INFO_STREAM (Logger, "myServiceName client created");
 
-  bool service_found = false;
-
-  // Keep test running only for the length of the "test_duration" parameter
-  // (in seconds)
-  while (
-    rclcpp::ok() &&
-    ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(TEST_DURATION))
-  )
-  {
-    // Repeatedly check for the dummy service until its found
-    if (client->wait_for_service(0s)) {
-      service_found = true;
-      break;
-    }
-
-    rclcpp::spin_some(node);
+  /**
+   * 5.) Finally do the actual test:
+   */
+  rclcpp::Time start_time    = rclcpp::Clock().now(); // reads /clock, if "use_sim_time" is true
+  bool service_found         = false;
+  rclcpp::Duration duration  = 0s;
+  RCLCPP_INFO_STREAM (Logger, "Performing Test...");
+  auto timeout = std::chrono::milliseconds ((int) (TEST_DURATION * 1000));
+  
+  if (client->wait_for_service (timeout)) { // blocking 
+    duration = (rclcpp::Clock().now() - start_time);
+    service_found = true;
   }
-
-  // Test assertions - check that the dummy node was found
-  CHECK(service_found);
+  
+  RCLCPP_INFO_STREAM (Logger, "duration = " << duration.seconds() << " service_found=" << service_found);
+  CHECK (service_found); // Test assertions - check that the servie was found
 }
 
 
+////////////////////////////////////////////////
+// TEST CASE 2:  Testing a topic talker
+////////////////////////////////////////////////
+
+using std_msgs::msg::String;
+using SUBSCRIBER = rclcpp::Subscription<String>::SharedPtr;
+
+// Define a functor (a struct with operator()) that captures the additional parameter
+struct ListenerCallback {
+    ListenerCallback(bool &gotTopic) : gotTopic_(gotTopic) {}
+
+    void operator()(const String msg) const {
+      RCLCPP_INFO_STREAM (Logger, "I heard:" << msg.data.c_str());
+      gotTopic_ = true;
+    }
+private:
+    bool &gotTopic_;
+};
+
 
 TEST_CASE("talker_test", "[integration]") {
-  // Create a simple client node to check if the auxiliary node
-  // has a topic available
-  auto node = rclcpp::Node::make_shared("talker_test_node");
 
-  // Declare a parameter on the node
-  // (the default catch_ros2 node main will allow ROS arguments
-  // like parameters to be passed to nodes in test files)
-  node->declare_parameter<double>("test_duration");
+  /* In this test case, the node under test (aka Auxiliary test node)
+     is a topic talker, which got launched by the launcher.
 
-  // Get value of the parameter
-  // This line will cause a runtime error if a value
-  // for the "test_duration" parameter is not passed to the node
-  const auto TEST_DURATION =
-    node->get_parameter("test_duration").get_parameter_value().get<double>();
+     We will ceate a topic listener as part of the node performing the
+     test (aka Integration test node).  And the test simply checks if
+     the topic is recieved within the duration of the test. */
 
-  // subscribe to the topic 
-  using std_msgs::msg::String;
-  using SUBSCRIBER = rclcpp::Subscription<String>::SharedPtr;
-  bool gotData = false;
-  SUBSCRIBER subscription = node->create_subscription<String>
-    ("chatter", 10,
-     // Lambda expression begins
-     [&](const std_msgs::msg::String& msg) {
-       RCLCPP_INFO(node->get_logger(), "I heard: '%s'", msg.data.c_str());
-       gotData = true;
-     } // end of lambda expression
-     );
+  /**
+   * 1.) Create the node that performs the test. (aka Integration test node):
+   */
+  auto testerNode = rclcpp::Node::make_shared("IntegrationTestNode2");
+  Logger = testerNode->get_logger(); // make sure message will appear in rqt_console
 
-  // should get data winhin TEST_DURATION
-  rclcpp::Rate rate(2.0);       // 2hz checks
-  rclcpp::Time start_time = rclcpp::Clock().now();
-  while ((rclcpp::Clock().now() - start_time) < rclcpp::Duration::from_seconds(TEST_DURATION))
+  /**
+   * 2.) Declare a parameter for the duration of the test:
+   */
+  testerNode->declare_parameter<double> ("test_duration");
+
+  /**
+   * 3.) Get the test duration value:
+   */
+  const auto TEST_DURATION = testerNode->get_parameter("test_duration").get_parameter_value().get<double>();
+  RCLCPP_INFO_STREAM (Logger, "Got test_duration =" << TEST_DURATION);
+
+  /**
+   * 4.) Now, subscribe to a specific topic we're looking for:
+   */
+  bool got_topic = false;
+  auto subscription = testerNode->create_subscription<String> ("chatter", 10, ListenerCallback (got_topic));
+
+  
+  /**
+   * 5.) Finally do the actual test:
+   */
+  rclcpp::Rate rate(10.0);       // 10hz checks
+  auto start_time = rclcpp::Clock().now();
+  auto duration   = rclcpp::Clock().now() - start_time;
+  auto timeout    = rclcpp::Duration::from_seconds (TEST_DURATION);
+  while (!got_topic && (duration < timeout))
     {
-      rclcpp::spin_some(node);
+      rclcpp::spin_some (testerNode);
       rate.sleep();
-
-      if (gotData)
-        break;
+      duration = (rclcpp::Clock().now() - start_time);
     }
   
-  // Test assertions - check that the dummy node was found
-  CHECK (gotData);
+  RCLCPP_INFO_STREAM (Logger, "duration = " << duration.seconds() << " got_topic=" << got_topic);
+  CHECK (got_topic); // Test assertions - check that the topic was received
 }

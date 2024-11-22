@@ -83,7 +83,7 @@ install(TARGETS
   )
 
 install(DIRECTORY
-  launch/                        # install the entire lauch/ subdirectory
+  launch                        # install the entire launch subdirectory
   DESTINATION share/${PROJECT_NAME}
   )
 

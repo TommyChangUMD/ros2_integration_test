@@ -26,9 +26,9 @@ if(BUILD_TESTING)
   set(ament_cmake_uncrustify_FOUND TRUE)
 
   # build the integration test
-  ###########################################################################
+  #######################################################################################
   # 1.) BUILD AND INSTALL THE INTEGRATION TEST NODE (aka Node that performs the test)  ##
-  ###########################################################################
+  #######################################################################################
   # This is the node in which integration tests occur
   add_executable(integration_test_node
     test/integration_test_node.cpp
@@ -55,18 +55,15 @@ if(BUILD_TESTING)
     LAUNCH_FILE integration_test.launch.yaml  # example in YAML
     )
 
-  
+
 endif()
 
 
 #######################################################################
 ## 3.) BUILD AN EXAMPLE INTEGRATION AUX NODE (aka Nodes under teset) ##
 #######################################################################
-# Here, we build a node to be tested and package it within this ROS2
-# package.  However, it could be a any node(s) in any ROS 2 package(s)
-# that you want to test.  This means the nodes and packages already
-# exist and this step is not needed here.  See the launcher file to
-# see all the node(s) under test.
+# Here, we build the node to be tested.  But, it could be a any existing node(s)
+# in any ROS 2 package(s).  See launcher file for all the node(s) under test.
 add_executable (service_server
   src/service_server_node.cpp
   )
